@@ -35,7 +35,7 @@
       grid-template-columns: 1fr 1fr 1fr;
       text-align: center;
       padding: 0.5em;
-      font-size: 1.2rem;
+      font-size: 1.2rem; /* Default size */
       z-index: 2;
     }
 
@@ -154,20 +154,20 @@
 
     .archive-item h3 {
       margin-top: 0;
-      font-size: 1.2rem;
+      font-size: 1.2rem; /* Default size */
       color: inherit; /* Inherit the color from .archive-item */
     }
 
     .archive-item p {
       display: none; /* Hide extra information initially */
-      font-size: 14px;
+      font-size: 14px; /* Default size */
       color: inherit; /* Inherit the color from .archive-item */
     }
 
     .archive-item.expanded p {
       display: block; /* Show extra information when expanded */
       font-weight: 500;
-      font-size: 1.1rem;
+      font-size: 1.1rem; /* Default size when expanded */
     }
 
     .archive-item img {
@@ -258,6 +258,24 @@
         max-width: 300px; /* Prevent it from becoming too large */
         height: auto;
       }
+
+      /* --- Mobile Specific Text Sizes --- */
+      header {
+          font-size: 1rem; /* Smaller header text on mobile */
+      }
+
+      .archive-item h3 {
+          font-size: 1rem; /* Smaller archive heading on mobile */
+      }
+
+      .archive-item p {
+          font-size: 12px; /* Smaller initial paragraph text on mobile */
+      }
+
+      .archive-item.expanded p {
+           font-size: 1rem; /* Smaller expanded paragraph text on mobile */
+      }
+
     }
 
     @media (max-width: 900px) {
@@ -558,7 +576,14 @@
       // --- AUDIO PLAYER LOGIC ---
       const audioPlayer = document.getElementById('audio');
       const buttonIcon = document.getElementById('buttonIcon');
+      // Target broadcast time: May 2, 2025, 4:00 PM EET (UTC+2 during non-DST, UTC+3 during DST).
+      // Assuming EET is UTC+2 year-round for simplicity in this example.
+      // May 2nd, 2025, 16:00 EET is May 2nd, 2025, 14:00 UTC.
+      // We will create a Date object in UTC and compare.
+      // IMPORTANT: For accurate timezone handling including DST, a more robust approach is recommended.
+      // This uses UTC assuming EET is UTC+2.
       const broadcastDate = new Date(Date.UTC(2025, 4, 2, 14, 0, 0)); // Month is 0-indexed (4 for May)
+
 
       function showBroadcastNotReadyPopup() {
            popupMessage.textContent = "The pilot broadcast will be available to play on 2.5.2025 at 4pm EET.";
@@ -572,12 +597,24 @@
       function togglePlayPause() {
           const now = new Date();
 
+          // *** IMPORTANT *** For testing purposes, you might want to temporarily change broadcastDate
+          // to a date in the past, e.g., const broadcastDate = new Date(Date.UTC(2020, 0, 1, 0, 0, 0));
+          // to test the play functionality, or keep it in the future to test the popup.
+          // Remember to change it back before deploying live!
+          // console.log("Current time:", now); // Optional: log current time for debugging
+          // console.log("Broadcast time:", broadcastDate); // Optional: log broadcast time for debugging
+          // console.log("Comparison (now < broadcastDate):", now < broadcastDate); // Optional: log comparison result
+
           if (now < broadcastDate) {
               // Broadcast is not yet available, show popup
               showBroadcastNotReadyPopup();
           } else {
               // Broadcast is available, proceed with play/pause
               if (audioPlayer.paused || audioPlayer.ended) {
+                  // If audio was ended and we are playing again, reset time to beginning
+                  if (audioPlayer.ended) {
+                      audioPlayer.currentTime = 0;
+                  }
                   audioPlayer.play();
                   buttonIcon.src = 'Images/OhRadio_Stop.svg'; // Change icon to Pause
                   isPlaying = true;
@@ -608,8 +645,6 @@
               // Update time display
               const currentMinutes = Math.floor(audioPlayer.currentTime / 60);
               const currentSeconds = Math.floor(audioPlayer.currentTime % 60);
-              // const durationMinutes = Math.floor(audioPlayer.duration / 60); // Not currently displayed
-              // const durationSeconds = Math.floor(audioPlayer.duration % 60); // Not currently displayed
 
                if(progressTime) {
                    progressTime.textContent = `${currentMinutes}:${currentSeconds < 10 ? '0' : ''}${currentSeconds}`;
@@ -619,7 +654,9 @@
 
        // Allow seeking by clicking/dragging on the progress bar
        function seek(event) {
-            if (audioPlayer.duration) {
+            // Only allow seeking if the broadcast is available
+           const now = new Date();
+           if (now >= broadcastDate && audioPlayer.duration) {
                 const containerRect = progressContainer.getBoundingClientRect();
                 // Calculate click position relative to the progress bar *only*
                 const clickX = event.clientX - progressBar.getBoundingClientRect().left; // Use progressBar rect
@@ -631,7 +668,7 @@
                 const seekTime = (clampedPercentage / 100) * audioPlayer.duration;
                 audioPlayer.currentTime = seekTime;
                 progressBar.style.width = `${clampedPercentage}%`; // Update bar immediately
-            }
+           }
         }
 
        progressContainer.addEventListener('mousedown', (e) => {
@@ -640,9 +677,6 @@
            if (now >= broadcastDate) {
                 isDragging = true;
                 seek(e); // Seek on initial click
-           } else {
-               // If broadcast is not available, clicking the progress bar does nothing
-               // but the popup is handled by clicking the play button.
            }
        });
 
@@ -661,11 +695,16 @@
 
        // Reset to Play button when audio ends
        audioPlayer.addEventListener('ended', () => {
-           buttonIcon.src = 'images/OhRadio_Play.svg';
+           buttonIcon.src = 'Images/OhRadio_Play.svg';
            progressBar.style.width = '0%'; // Reset progress bar
            if(progressTime) progressTime.textContent = '0:00';
            isPlaying = false;
        });
+
+       // Ensure initial state is Play icon and progress bar is at 0% (unless audio metadata loads and sets initialProgress)
+        buttonIcon.src = 'Images/OhRadio_Play.svg';
+        progressBar.style.width = '0%';
+        if(progressTime) progressTime.textContent = '0:00';
 
 
       document.body.style.visibility = 'visible'; // Make body visible after styles are applied
