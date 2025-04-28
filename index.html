@@ -36,7 +36,8 @@
       grid-template-columns: 1fr 1fr 1fr;
       text-align: center;
       padding: 0.5em;
-      font-family: 'Arial Narrow Bold';
+      font-family: 'Arial Narrow';
+      font-weight: 800;
       font-size: 1.2rem; /* Default header font size */
       z-index: 2;
     }
@@ -158,9 +159,9 @@
 
     .archive-item h3 {
       margin-top: 0;
-      font-size: 1.2rem; /* Default h3 font size */
-      font-family: 'Arial Narrow Bold';
-      font-weight: bold;
+      font-size: 1.1rem; /* Default h3 font size */
+      font-family: 'Arial Narrow';
+      font-weight: 800;
       color: inherit;
     }
 
@@ -255,7 +256,7 @@
         height: 100vh;
       }
 
-      .card-container{
+      .card-container {
         overflow-y: scroll;
         overflow-x: auto; /* Add horizontal scrolling */
         height: -webkit-fill-available;
@@ -289,6 +290,9 @@
 
       .archive-item h3 {
         font-size: 1rem; /* Smaller h3 font size on mobile */
+        margin-bottom: 0; /* Reduced margin below h3 on mobile */
+        /* Add margin-top: 0; if needed to remove space above the first h3 */
+        margin-top: 0;
       }
 
       .archive-item p {
