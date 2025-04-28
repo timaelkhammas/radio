@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link href="https://db.onlinewebfonts.com/c/7c6661efce01eac269383bac79303c1b?family=Arial+Narrow" rel="stylesheet">
   <title>oH radio</title>
   <style>
     html {
@@ -12,7 +11,8 @@
 
     body {
       margin: 0;
-      font-family: "Arial Narrow";
+      font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+      font-weight: 700;
       background-color: rgb(37, 9, 2); /* background color - overridden by JS */
       visibility: hidden; /* Hide until JS applies styles */
     }
@@ -35,10 +35,8 @@
       grid-template-columns: 1fr 1fr 1fr;
       text-align: center;
       padding: 0.5em;
-      font-size: 1.2rem; /* Default size */
+      font-size: 1.2rem; /* Default header font size */
       z-index: 2;
-      font-family: "Arial Narrow";
-      font-weight: bold;
     }
 
     header a {
@@ -91,29 +89,34 @@
       bottom: 0;
       left: 0;
       width: 100%; /* Progress bar spans full width */
-      height: 12px; /* Thicker progress bar */
+      height: 15px; /* Thicker progress bar */
       cursor: pointer;
       z-index: 4;
       background-color: transparent; /* Overridden by JS */
+      position: fixed;
+      /* Background color will be set by JS */
     }
 
     #progressBar {
       height: 100%;
       width: 0%; /* Initial width */
       position: relative;
+      /* Background color will be set by JS */
     }
 
     #progressTime {
       position: absolute;
-      top: -1.5em; /* adjust as needed */
-      right: 0;
+      bottom: 1.5em; /* Position relative to the bottom of the container */
+      left: 0; /* Start at the beginning */
+      transform: translateX(-50%); /* Center the text on the left position */
       font-size: 0.75rem;
       background-color: transparent;
       color: inherit;
-      pointer-events: none;
-      /* Prevent text from being included in the progress bar width calculation */
-      transform: translateX(-100%); /* Position relative to its container */
+      pointer-events: none; /* Prevent interfering with click */
       white-space: nowrap; /* Prevent wrapping */
+      z-index: 5; /* Ensure it's above the progress bar */
+      padding: 0 4px; /* Add padding */
+      visibility: hidden; /* Hidden by default */
     }
 
 
@@ -122,21 +125,19 @@
       flex-direction: column;
       gap: 20px;
       font-weight: 500;
-      border-top: 2px solid;  /* Border only on top of the row */
-      border-bottom: 2px solid; /* Border only on bottom of the row */
-      /* Color of borders and text overridden by JS */
+      border-top: 2px solid;
+      border-bottom: 2px solid;
     }
 
     .archive-row {
       display: grid;
-      grid-template-columns: repeat(4, 1fr); /* Create 4 equal columns */
-      gap: 0px; /* Space between the items */
-       /* Background color overridden by JS */
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0px;
     }
 
     .archive-item img {
-      width: 50px;  /* Small size for the image */
-      height: auto; /* Maintain aspect ratio */
+      width: 50px;
+      height: auto;
       transition: all 0.3s ease-in-out;
     }
 
@@ -145,33 +146,30 @@
       border-left: none;
       border-right: none;
       cursor: pointer;
-      transition: all 0.3s ease-in-out; /* Smooth transition */
-      /* Text color overridden by JS */
+      transition: all 0.3s ease-in-out;
     }
 
     .archive-item.expanded {
-      height: auto; /* Let the height expand naturally */
+      height: auto;
       cursor:default;
     }
 
     .archive-item h3 {
       margin-top: 0;
-      font-size: 1.2rem; /* Default size */
-      color: inherit; /* Inherit the color from .archive-item */
-      font-family: "Arial Narrow";
-      font-weight: bold;
+      font-size: 1.2rem; /* Default h3 font size */
+      color: inherit;
     }
 
     .archive-item p {
-      display: none; /* Hide extra information initially */
-      font-size: 14px; /* Default size */
-      color: inherit; /* Inherit the color from .archive-item */
+      display: none;
+      font-size: 14px; /* Default p font size (approx 0.875rem) */
+      color: inherit;
     }
 
     .archive-item.expanded p {
-      display: block; /* Show extra information when expanded */
+      display: block;
       font-weight: 500;
-      font-size: 1.1rem; /* Default size when expanded */
+      font-size: 1.1rem; /* Default expanded p font size */
     }
 
     .archive-item img {
@@ -179,7 +177,8 @@
     }
 
     .archive-item.expanded img {
-      width: 300px; /* Enlarge the image when expanded */
+      width: 100%;
+      max-width: 300px;
       height: auto;
     }
 
@@ -193,23 +192,22 @@
     }
 
     .archive-item p a:hover {
-        color: inherit; /* Ensure link color matches the surrounding text color */
+        color: inherit;
         text-decoration: none;
     }
 
-    /* --- POPUP STYLES --- */
     .popup-overlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent dark overlay */
+        background-color: rgba(0, 0, 0, 0.7);
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 10; /* High z-index to be on top */
-        visibility: hidden; /* Hidden by default */
+        z-index: 10;
+        visibility: hidden;
         opacity: 0;
         transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
     }
@@ -220,66 +218,80 @@
     }
 
     .popup-content {
+        position: relative; /* Needed for absolute positioning of the close button */
         padding: 20px;
         text-align: center;
         max-width: 80%;
-        /* Background and text color overridden by JS */
     }
 
-/* Media query for non-desktop sizes */
+    .close-button {
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: inherit; /* This will be overridden by JS to match bgColor */
+        padding: 0;
+        line-height: 1;
+    }
+
+    .close-button:hover {
+        opacity: 0.7;
+    }
+
+
 @media (max-width: 900px) {
       .hero {
-        /* Allow content to scroll within the hero on smaller screens if needed */
         overflow-y: auto;
-        /* Keep height 100vh on small screens so the hero occupies the full viewport */
         height: 100vh;
       }
 
       .card-container{
         overflow-y: scroll;
         height: -webkit-fill-available;
-        width: 1672px; /* This width looks suspicious, potentially fix needed */
+        width: 100%;
         padding-top: 20px;
       }
 
       .intro-card {
-        width: inherit;
+        width: 100%;
         height: inherit;
         object-fit: cover;
         overflow-y: scroll;
       }
 
+      header {
+        font-size: 1rem; /* Smaller header font size on mobile */
+      }
+
       .archive-row {
-        grid-template-columns: 1fr; /* Stack archive items on smaller screens */
+        grid-template-columns: 1fr;
       }
 
       .archive-item {
-        padding: 10px; /* Adjust padding for smaller screens */
-      }
-
-      .archive-item.expanded img {
-        width: 100%; /* Make enlarged image responsive */
-        max-width: 300px; /* Prevent it from becoming too large */
-        height: auto;
-      }
-
-      /* --- Mobile Specific Text Sizes --- */
-      header {
-          font-size: 1rem; /* Smaller header text on mobile */
+        padding: 10px;
       }
 
       .archive-item h3 {
-          font-size: 1rem; /* Smaller archive heading on mobile */
+        font-size: 1rem; /* Smaller h3 font size on mobile */
       }
 
       .archive-item p {
-          font-size: 12px; /* Smaller initial paragraph text on mobile */
+        font-size: 0.75rem; /* Smaller p font size on mobile (approx 12px) */
       }
 
       .archive-item.expanded p {
-           font-size: 1rem; /* Smaller expanded paragraph text on mobile */
+        font-size: 0.9rem; /* Smaller expanded p font size on mobile */
       }
 
+
+      .archive-item.expanded img {
+        width: 100%;
+        max-width: 300px;
+        height: auto;
+      }
     }
 
     @media (max-width: 900px) {
@@ -312,9 +324,8 @@
     </div>
 
     <div id="progressContainer">
-      <div id="progressBar">
-        <span id="progressTime">00:00</span>
-      </div>
+      <div id="progressBar"></div>
+      <span id="progressTime">00:00</span>
     </div>
   </section>
 
@@ -388,7 +399,7 @@
 
   <div class="popup-overlay" id="broadcastPopupOverlay">
       <div class="popup-content" id="broadcastPopupContent">
-          <p id="popupMessage"></p>
+          <button class="close-button" id="closeBroadcastPopup">&times;</button> <p id="popupMessage"></p>
       </div>
   </div>
   <script>
@@ -408,6 +419,7 @@
       const broadcastPopupOverlay = document.getElementById('broadcastPopupOverlay');
       const broadcastPopupContent = document.getElementById('broadcastPopupContent');
       const popupMessage = document.getElementById('popupMessage');
+      const closeBroadcastPopupBtn = document.getElementById('closeBroadcastPopup'); // Get the close button
 
       let isPlaying = false;
       let isDragging = false;
@@ -468,16 +480,14 @@
       const lightness1 = Math.floor(Math.random() * 21) + 40; // Lightness for direct HSL color (40-60%)
       const lightness2 = Math.floor(Math.random() * 21) + 40; // Lightness for background HSL color (40-60%)
 
-      // This 'color' will be used for text, progress bar, archive row bg, and popup background
+      // This 'color' will be used for text, progress bar BACKGROUND, archive row bg, and popup background
       const color = `hsl(${hue1}, ${saturation}%, ${lightness1}%)`;
-      // This 'bgColor' is for the main page background and popup text
+      // This 'bgColor' is for the main page background, popup text, and progress bar FILL color
       const bgColor = `hsl(${hue2}, ${saturation}%, ${lightness2}%)`;
 
       // Apply background color to body, hero, etc.
       document.body.style.backgroundColor = bgColor;
       hero.style.backgroundColor = bgColor;
-      progressContainer.style.backgroundColor = bgColor;
-
 
       // Apply the main 'color' (from hue1) to the specified elements:
       // 1. Header text (including links within it)
@@ -486,8 +496,8 @@
         link.style.color = color;
       });
 
-      // 2. Progress bar background
-      progressBar.style.backgroundColor = color;
+      // 2. Progress bar CONTAINER background (visible portion)
+      progressContainer.style.backgroundColor = color;
 
       // 3. Archive row background
       if (archiveRow) {
@@ -500,10 +510,17 @@
       }
 
 
-      // Apply the 'color' (from hue1) to the progress time display
+      // Apply the 'bgColor' (from hue2) to elements that match the page background
+      // 1. Progress bar FILL color
+      progressBar.style.backgroundColor = bgColor;
+
+      // 2. Progress time display text color (matches page background)
       if (progressTime) {
-        progressTime.style.color = color;
+        progressTime.style.color = bgColor;
+         // Also set its background to match the popup/progress container background
+         progressTime.style.backgroundColor = color;
       }
+
 
       // Elements that should have colored FILTER (invert + hue rotate based on hue1)
       const elementsWithFilter = [
@@ -533,81 +550,48 @@
       if (popupMessage) {
           popupMessage.style.color = bgColor;
       }
+       // Set the close button color to match the popup text color
+       if (closeBroadcastPopupBtn) {
+           closeBroadcastPopupBtn.style.color = bgColor;
+       }
+
 
       // Make sure "no-filter" images stay normal
       document.querySelectorAll('img.no-filter').forEach(img => {
         img.style.filter = 'none';
       });
 
-      // Initial progress setup
-      const initialProgress = 10;
-      const audio = document.getElementById('audio');
-      progressBar.style.width = `${initialProgress}%`;
-      if (audio && !isNaN(audio.duration)) {
-        // Set initial time only if audio metadata is loaded
-        audio.onloadedmetadata = () => {
-            audio.currentTime = (initialProgress / 100) * audio.duration;
-            // Update time display initially too
-            const initialMinutes = Math.floor(audio.currentTime / 60);
-            const initialSeconds = Math.floor(audio.currentTime % 60);
-            if(progressTime) {
-                 progressTime.textContent = `${initialMinutes}:${initialSeconds < 10 ? '0' : ''}${initialSeconds}`;
-            }
-        };
-         // Handle cases where metadata might already be loaded before listener attached
-        if (audio.readyState >= 1) { // HAVE_METADATA or higher
-             audio.currentTime = (initialProgress / 100) * audio.duration;
-             const initialMinutes = Math.floor(audio.currentTime / 60);
-             const initialSeconds = Math.floor(audio.currentTime % 60);
-             if(progressTime) {
-                 progressTime.textContent = `${initialMinutes}:${initialSeconds < 10 ? '0' : ''}${initialSeconds}`;
-             }
-        }
-      }
-
-
-      // Archive item expansion logic (remains the same)
-      archiveSection.addEventListener('click', (event) => {
-        // Ensure the click is directly on the section or row, not preventing default link behavior if links were added later
-         if (event.target.closest('.archive-item') || event.target === archiveSection || event.target === archiveRow) {
-              archiveItems.forEach(item => {
-                  item.classList.toggle('expanded');
-              });
-          }
-      });
-
-
       // --- AUDIO PLAYER LOGIC ---
       const audioPlayer = document.getElementById('audio');
       const buttonIcon = document.getElementById('buttonIcon');
-      // Target broadcast time: May 2, 2025, 4:00 PM EET (UTC+2 during non-DST, UTC+3 during DST).
-      // Assuming EET is UTC+2 year-round for simplicity in this example.
-      // May 2nd, 2025, 16:00 EET is May 2nd, 2025, 14:00 UTC.
-      // We will create a Date object in UTC and compare.
-      // IMPORTANT: For accurate timezone handling including DST, a more robust approach is recommended.
-      // This uses UTC assuming EET is UTC+2.
+      // Broadcast date is 2.5.2025 4pm EET. EET is UTC+2.
+      // For 4pm EET (16:00), the UTC time is 14:00.
       const broadcastDate = new Date(Date.UTC(2025, 4, 2, 14, 0, 0)); // Month is 0-indexed (4 for May)
+
+      // Set initial visual state of the progress bar and time display - START AT 0
+      progressBar.style.width = '0%';
+      if(progressTime) {
+          progressTime.style.left = '0%'; // Time text starts at the very beginning
+          progressTime.textContent = '00:00'; // Display 00:00 initially
+          progressTime.style.visibility = 'hidden'; // Hide time initially
+      }
 
 
       function showBroadcastNotReadyPopup() {
            popupMessage.textContent = "The pilot broadcast will be available to play on 2.5.2025 at 4pm EET.";
            broadcastPopupOverlay.classList.add('visible');
+           // Add event listener to body to disable scrolling when popup is visible
+           document.body.style.overflow = 'hidden';
       }
 
       function hideBroadcastNotReadyPopup() {
            broadcastPopupOverlay.classList.remove('visible');
+           // Remove event listener from body to re-enable scrolling
+           document.body.style.overflow = '';
       }
 
       function togglePlayPause() {
           const now = new Date();
-
-          // *** IMPORTANT *** For testing purposes, you might want to temporarily change broadcastDate
-          // to a date in the past, e.g., const broadcastDate = new Date(Date.UTC(2020, 0, 1, 0, 0, 0));
-          // to test the play functionality, or keep it in the future to test the popup.
-          // Remember to change it back before deploying live!
-          // console.log("Current time:", now); // Optional: log current time for debugging
-          // console.log("Broadcast time:", broadcastDate); // Optional: log broadcast time for debugging
-          // console.log("Comparison (now < broadcastDate):", now < broadcastDate); // Optional: log comparison result
 
           if (now < broadcastDate) {
               // Broadcast is not yet available, show popup
@@ -615,73 +599,97 @@
           } else {
               // Broadcast is available, proceed with play/pause
               if (audioPlayer.paused || audioPlayer.ended) {
-                  // If audio was ended and we are playing again, reset time to beginning
-                  if (audioPlayer.ended) {
-                      audioPlayer.currentTime = 0;
-                  }
                   audioPlayer.play();
                   buttonIcon.src = 'Images/OhRadio_Stop.svg'; // Change icon to Pause
                   isPlaying = true;
+                  if (progressTime) progressTime.style.visibility = 'visible'; // Show time when playing
               } else {
                   audioPlayer.pause();
                   buttonIcon.src = 'Images/OhRadio_Play.svg'; // Change icon to Play
                   isPlaying = false;
+                  if (progressTime) progressTime.style.visibility = 'hidden'; // Hide time when paused
               }
           }
       }
 
+
       playPauseBtn.addEventListener('click', togglePlayPause);
 
-      // Hide popup when clicking on the overlay
+      // Hide popup when clicking on the overlay or the close button
       broadcastPopupOverlay.addEventListener('click', (event) => {
-          if (event.target === broadcastPopupOverlay) { // Check if the click is directly on the overlay, not the content
+          // Check if the click is directly on the overlay (not its children)
+          if (event.target === broadcastPopupOverlay) {
               hideBroadcastNotReadyPopup();
           }
       });
 
+      if (closeBroadcastPopupBtn) {
+          closeBroadcastPopupBtn.addEventListener('click', hideBroadcastNotReadyPopup);
+      }
+
+
+      // Function to format time (minutes:seconds)
+      function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        const formattedSeconds = remainingSeconds < 10 ? '0' + remainingSeconds : remainingSeconds;
+        return `${minutes}:${formattedSeconds}`;
+      }
+
 
       // Update progress bar and time as audio plays
       audioPlayer.addEventListener('timeupdate', () => {
+          // Only update progress if duration is available and not dragging
           if (!isDragging && audioPlayer.duration) {
-              const progressPercent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-              progressBar.style.width = `${progressPercent}%`;
+               const progressPercent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+               progressBar.style.width = `${progressPercent}%`;
+               if(progressTime) progressTime.style.left = `${progressPercent}%`; // Update time position
 
-              // Update time display
-              const currentMinutes = Math.floor(audioPlayer.currentTime / 60);
-              const currentSeconds = Math.floor(audioPlayer.currentTime % 60);
-
-               if(progressTime) {
-                   progressTime.textContent = `${currentMinutes}:${currentSeconds < 10 ? '0' : ''}${currentSeconds}`;
-               }
-          }
+               // Update time display
+                if(progressTime) {
+                    progressTime.textContent = formatTime(audioPlayer.currentTime);
+                }
+           }
+            // If duration is not available, timeupdate won't fire or will use default
       });
 
        // Allow seeking by clicking/dragging on the progress bar
        function seek(event) {
-            // Only allow seeking if the broadcast is available
-           const now = new Date();
-           if (now >= broadcastDate && audioPlayer.duration) {
-                const containerRect = progressContainer.getBoundingClientRect();
-                // Calculate click position relative to the progress bar *only*
-                const clickX = event.clientX - progressBar.getBoundingClientRect().left; // Use progressBar rect
-                const percentage = (clickX / progressBar.offsetWidth) * 100; // Use progressBar width
+            // Only allow seeking if the broadcast is available AND duration is available
+            const now = new Date();
+            if (now < broadcastDate || !audioPlayer.duration) {
+                return; // Do nothing if not available or duration is not set
+            }
 
-                // Clamp percentage between 0 and 100
-                const clampedPercentage = Math.max(0, Math.min(100, percentage));
+            const containerRect = progressContainer.getBoundingClientRect();
+            // Calculate click position relative to the progressContainer
+            const clickX = event.clientX - containerRect.left;
+            const percentage = (clickX / containerRect.width) * 100;
 
-                const seekTime = (clampedPercentage / 100) * audioPlayer.duration;
-                audioPlayer.currentTime = seekTime;
-                progressBar.style.width = `${clampedPercentage}%`; // Update bar immediately
-           }
+            // Clamp percentage between 0 and 100
+            const clampedPercentage = Math.max(0, Math.min(100, percentage));
+
+            const seekTime = (clampedPercentage / 100) * audioPlayer.duration;
+            audioPlayer.currentTime = seekTime;
+
+            // Update bar and time display immediately
+            progressBar.style.width = `${clampedPercentage}%`;
+            if(progressTime) {
+                 progressTime.style.left = `${clampedPercentage}%`;
+                 progressTime.textContent = formatTime(audioPlayer.currentTime);
+            }
+
         }
 
        progressContainer.addEventListener('mousedown', (e) => {
-           // Only start dragging if the broadcast is available
+           // Only start dragging/seeking if the broadcast is available AND duration is available
            const now = new Date();
-           if (now >= broadcastDate) {
+           if (now >= broadcastDate && audioPlayer.duration) {
                 isDragging = true;
                 seek(e); // Seek on initial click
+                if (progressTime) progressTime.style.visibility = 'visible'; // Show time while dragging
            }
+           // If not available or no duration, mousedown does nothing for seeking
        });
 
        document.addEventListener('mousemove', (e) => {
@@ -693,22 +701,55 @@
        document.addEventListener('mouseup', () => {
            if (isDragging) {
                isDragging = false;
+               // If audio was paused before dragging, hide time after dragging stops
+               if (!audioPlayer.paused && progressTime) {
+                   // Keep visible if it's still playing after drop
+                   progressTime.style.visibility = 'visible';
+               } else if (audioPlayer.paused && progressTime) {
+                    // Hide if paused after drop
+                     progressTime.style.visibility = 'hidden';
+               }
            }
        });
 
 
-       // Reset to Play button when audio ends
+       // Reset to Play button and bar/time when audio ends
        audioPlayer.addEventListener('ended', () => {
-           buttonIcon.src = 'Images/OhRadio_Play.svg';
+           buttonIcon.src = 'images/OhRadio_Play.svg';
            progressBar.style.width = '0%'; // Reset progress bar
-           if(progressTime) progressTime.textContent = '0:00';
+           if(progressTime) {
+               progressTime.textContent = '0:00';
+               progressTime.style.left = '0%'; // Reset time position
+               progressTime.style.visibility = 'hidden'; // Hide time when ended
+           }
            isPlaying = false;
        });
 
-       // Ensure initial state is Play icon and progress bar is at 0% (unless audio metadata loads and sets initialProgress)
-        buttonIcon.src = 'Images/OhRadio_Play.svg';
-        progressBar.style.width = '0%';
-        if(progressTime) progressTime.textContent = '0:00';
+       // Set the actual audio currentTime to 0 when metadata is loaded
+       audioPlayer.onloadedmetadata = () => {
+           // Always start audio at 0, playback is controlled by the button
+           audioPlayer.currentTime = 0;
+           // The visual state (bar width and time text) should already be 0/00:00 and hidden
+       };
+
+       // Handle cases where metadata might already be loaded before listener attached
+       if (audioPlayer.readyState >= 1) { // HAVE_METADATA or higher
+           audioPlayer.onloadedmetadata(); // Call the function if metadata is already loaded
+       }
+
+
+      // Archive item expansion logic - Keep the check if popup is visible (it only appears now on button click)
+      archiveSection.addEventListener('click', (event) => {
+        // Only allow expansion if the popup is NOT visible
+        if (!broadcastPopupOverlay.classList.contains('visible')) {
+            // Ensure the click is directly on the section or row, not preventing default link behavior if links were added later
+             if (event.target.closest('.archive-item') || event.target === archiveSection || event.target === archiveRow) {
+                  archiveItems.forEach(item => {
+                      item.classList.toggle('expanded');
+                  });
+              }
+          }
+      });
 
 
       document.body.style.visibility = 'visible'; // Make body visible after styles are applied
