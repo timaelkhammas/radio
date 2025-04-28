@@ -24,7 +24,7 @@
       align-items: center;
       justify-content: center;
       position: relative;
-      overflow: hidden;
+      overflow: hidden; /* Keep hero hidden by default */
     }
 
     header {
@@ -49,9 +49,9 @@
     }
 
     .intro-card {
-      width: 100vw;
-      height: 100vh;
-      object-fit: contain;
+      width: 100vw; /* Default desktop width */
+      height: 100vh; /* Default desktop height */
+      object-fit: contain; /* Default desktop object-fit */
       z-index: 0;
     }
 
@@ -245,21 +245,28 @@
 @media (max-width: 900px) {
       .hero {
         overflow-y: auto;
+        /* Keep overflow-x as hidden or default if you don't want the whole hero to scroll horizontally */
         height: 100vh;
       }
 
       .card-container{
         overflow-y: scroll;
+        overflow-x: auto; /* Add horizontal scrolling */
         height: -webkit-fill-available;
         width: 100%;
         padding-top: 20px;
+        /* Remove justify-content/align-items if present to allow content to go beyond bounds */
+        display: block; /* Change display to block if flex/grid is centering and preventing overflow */
       }
 
       .intro-card {
-        width: 100%;
+        width: auto; /* Allow SVG to take its natural width */
+        min-width: 100%; /* Ensure it's at least the width of the container */
         height: inherit;
-        object-fit: cover;
-        overflow-y: scroll;
+        object-fit: contain; /* Use contain or remove for natural sizing */
+        overflow-y: hidden; /* Hide vertical overflow on the card itself if container handles it */
+        overflow-x: visible; /* Allow card content to overflow horizontally */
+        display: block; /* Ensure image is treated as a block element */
       }
 
       header {
@@ -285,7 +292,6 @@
       .archive-item.expanded p {
         font-size: 0.9rem; /* Smaller expanded p font size on mobile */
       }
-
 
       .archive-item.expanded img {
         width: 100%;
@@ -394,9 +400,6 @@
     </div>
   </section>
 
-
-  <br><br><br><br><br><br>
-
   <div class="popup-overlay" id="broadcastPopupOverlay">
       <div class="popup-content" id="broadcastPopupContent">
           <button class="close-button" id="closeBroadcastPopup">&times;</button> <p id="popupMessage"></p>
@@ -417,7 +420,7 @@
 
       // Popup Elements
       const broadcastPopupOverlay = document.getElementById('broadcastPopupOverlay');
-      const broadcastPopupContent = document.getElementById('broadcastPopupContent');
+      const broadcastPopupContent = document.getElementById('popupContent'); // Corrected ID
       const popupMessage = document.getElementById('popupMessage');
       const closeBroadcastPopupBtn = document.getElementById('closeBroadcastPopup'); // Get the close button
 
@@ -505,8 +508,10 @@
       }
 
       // 4. Popup background
-      if (broadcastPopupContent) {
-          broadcastPopupContent.style.backgroundColor = color;
+      // Corrected to use broadcastPopupContent as defined in the HTML
+      const actualPopupContent = document.getElementById('broadcastPopupContent');
+      if (actualPopupContent) {
+          actualPopupContent.style.backgroundColor = color;
       }
 
 
@@ -518,7 +523,12 @@
       if (progressTime) {
         progressTime.style.color = bgColor;
          // Also set its background to match the popup/progress container background
-         progressTime.style.backgroundColor = color;
+         if (actualPopupContent) { // Use actualPopupContent for consistency
+            progressTime.style.backgroundColor = actualPopupContent.style.backgroundColor;
+         } else {
+             // Fallback if popup content isn't found (though it should be)
+             progressTime.style.backgroundColor = color;
+         }
       }
 
 
